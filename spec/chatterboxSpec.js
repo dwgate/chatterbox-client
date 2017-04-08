@@ -124,6 +124,7 @@ describe('chatterbox', function() {
 
         app.handleSubmit.restore();
       });
+
     });
   });
 });
