@@ -4,17 +4,17 @@ var app = {
   rooms: new Set(),
   users: new Set(),
   messages: new Set(),
-  currentRoom: 'ParseAPI'
+  currentRoom: '',
+  friends: new Set()
 };
 
 app.init = function() {
   app.fetch();
-
   setInterval(function() {
     app.fetch();
-  }, 1000);
+  }, 5000);
 
-  $('#main').find('.username').off().click(function(event) {
+  $('#chats').on('click', function(event) {
     app.handleUsernameClick();
   });
 
@@ -48,26 +48,53 @@ app.send = function(message) {
 app.fetch = function() {
   $.ajax({
     // This is the url you should use to communicate with the parse API server.
-    url: app.server,
+    url: app.server + '?order=-createdAt',
     type: 'GET',
+    // order: -createdAt,
     // data: JSON.stringify(message),
     // contentType: 'application/json',
     success: function (data) {
       console.log('chatterbox: Messages received');
-      console.log(data.results.length);
       app.populate(data);
-      app.renderRoom();
+      app.room = $("#roomSelect option:first-child").val();
+
+      // app.renderRooms();
+      // set roomselect dropdown to equal lobby
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
       console.error('chatterbox: Failed to fetch messages', data);
     }
-  });  
+  });
 };
 
 app.clearMessages = function() {
   $('#chats').children().remove();
 };
+
+var tagBody = '(?:[^"\'>]|"[^"]*"|\'[^\']*\')*';
+
+var tagOrComment = new RegExp(
+    '<(?:'
+    // Comment body.
+    + '!--(?:(?:-*[^->])*--+|-?)'
+    // Special "raw text" elements whose content should be elided.
+    + '|script\\b' + tagBody + '>[\\s\\S]*?</script\\s*'
+    + '|style\\b' + tagBody + '>[\\s\\S]*?</style\\s*'
+    // Regular name
+    + '|/?[a-z]'
+    + tagBody
+    + ')>',
+    'gi');
+
+function removeTags(html) {
+  var oldHtml;
+  do {
+    oldHtml = html;
+    html = html.replace(tagOrComment, '');
+  } while (html !== oldHtml);
+  return html.replace(/</g, '&lt;');
+}
 
 app.renderMessage = function(message) {
   // this.rooms = new Set();
@@ -78,26 +105,53 @@ app.renderMessage = function(message) {
   // "createdAt":"2017-02-08T21:42:35.550Z",
   // "updatedAt":"2017-02-08T21:42:35.550Z"
 
+  var username = message.username && removeTags(message.username);
+  var text = message.text && removeTags(message.text);
+  var roomname = message.roomname && removeTags(message.roomname);
+  var createdAt = message.createdAt && removeTags(message.createdAt);
+  var objectId = message.objectId && removeTags(message.objectId);
+
   var newMessage = `<div class="message-container" data-room-name="${message.roomname}">
-      <p class="username">${message.username}</p>
-      <p class="message">${message.text}</p>
-      <p class="roomname">${message.roomname}</p>
-      <p class="created">${message.createdAt}</p>
-      <p class="created">${message.objectId}</p>
+      <p class="username">${username}</p>
+      <p class="message">${text}</p>
+      <p class="roomname">${roomname}</p>
+      <p class="created">${createdAt}</p>
+      <p class="created">${objectId}</p>
     </div>`;
 
   this.users.add(message.username);
-  this.rooms.add(message.roomname);
+
+  if (!this.rooms.has(message.roomname)) {
+    this.rooms.add(message.roomname);
+    this.renderRoom(message.roomname)
+  }
 
   if (message.roomname === app.currentRoom) {
     $('#chats').append(newMessage);
   }
 };
 
-app.renderRoom = function() {
-  this.rooms.forEach(function (room) {
-    $('#roomSelect').append(`<option value="${room}">${room}</option>`);
-  });
+// var GetURLParameter = function(sParam) {
+//   var sPageURL = window.location.search.substring(1);
+//   var sURLVariables = sPageURL.split('&');
+//   for (var i = 0; i < sURLVariables.length; i++) {
+//     var sParameterName = sURLVariables[i].split('=');
+//     if (sParameterName[0] === sParam) {
+//       return sParameterName[1];
+//     }
+//   }
+// }​;
+
+// app.renderRooms = function() {
+//   $('#roomSelect').children().remove();
+//   this.rooms.forEach(function (room) {
+//       $('#roomSelect').append(`<option value="${room}">${room}</option>`);
+//   });
+// };
+
+app.renderRoom = function(room) {
+  room = room && removeTags(room);
+  $('#roomSelect').append(`<option value="${room}">${room}</option>`);
 };
 
 app.handleUsernameClick = function() {
@@ -107,9 +161,10 @@ app.handleUsernameClick = function() {
 
 app.handleSubmit = function() {
   console.log('handle submit');
+  // var username = GetURLParameter('username');
   var message = {
-    username: 'johnanded',
-    text: 'trololotrololotrololotrololotrololotrololotrololotrololo',
+    username: window.location.search.replace('?username=', ''),
+    text: $('#message').val(),
     roomname: app.currentRoom
   };
 
@@ -123,17 +178,11 @@ app.handleSubmit = function() {
 
 app.populate = function(messages) {
   messages.results.forEach(message => {
-    // console.log (message);
-    // console.log (this.messages);
     if (!app.messages.has(JSON.stringify(message))) {
-      console.log('adding...');
       app.messages.add(JSON.stringify(message));
       app.renderMessage(message);
-    } else {
-      // console.log ("DUPLICATE ITEM");
     }
   });
-  console.log (this.messages.length);
 };
 
 app.changeRoom = function() {
