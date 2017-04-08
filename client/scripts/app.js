@@ -1,6 +1,8 @@
 // YOUR CODE HERE:
 var app = {
-  server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages'
+  server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
+  rooms: new Set(),
+  users: new Set()
 };
 
 app.init = function() {
@@ -56,6 +58,7 @@ app.clearMessages = function() {
 };
 
 app.renderMessage = function(message) {
+  // this.rooms = new Set();
   // "objectId":"gHL2zQFXS0",
   // "username":"dan",
   // "text":"first",
@@ -63,12 +66,20 @@ app.renderMessage = function(message) {
   // "createdAt":"2017-02-08T21:42:35.550Z",
   // "updatedAt":"2017-02-08T21:42:35.550Z"
 
-  $('#chats').append(`<div>${message.text}</div>`);
-  $('#main').append(`<div class="username">${message.username}</div>`);
+  $('#chats').append(`<div class="message-container" data-room-name="${message.roomname}">
+      <p class="username">${message.username}</p>
+      <p class="message">${message.text}</p>
+      <p class="created">${message.createdAt}</p>
+    </div>`);
+
+  this.users.add(message.username);
+  this.rooms.add(message.roomname);
 };
 
-app.renderRoom = function(room) {
-  $('#roomSelect').append(`<span>${room}</span>`);
+app.renderRoom = function() {
+  this.rooms.forEach(function (room) {
+    $('#roomSelect').append(`<option value="${room}">${room}</option>`);
+  });
 };
 
 app.handleUsernameClick = function() {
@@ -86,6 +97,7 @@ app.populate = function(messages) {
   messages.results.forEach((message) => {
     app.renderMessage(message);
   });
+  app.renderRoom();
 };
 
 $(document).ready(function() {

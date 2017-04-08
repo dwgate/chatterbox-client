@@ -23,24 +23,26 @@
     <script src="env/config.js"></script>
     <script src="scripts/app.js"></script>
   </head>
+
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-      <!-- Your HTML goes here! -->
-      <div class="username">john</div>
-      <div class="username">ed</div>
+      <div id="rooms">
+        Room:
+        <select id="roomSelect">
+        </select>
+      </div>
+
+      <div id="chats"></div>
+
+      <div id="">
+        <form action="#" id="send" method="post">
+          <input id="message" type="text" name="message">
+          <!-- <button class="submit" type="button" id="submit">Submit!!</button> -->
+          <input class="submit" type="submit" name="submit">
+        </form>
+      </div>
     </div>
-    <div id="roomSelect"></div>
-
-    <div id="chats"></div>
-
-    <div id="">
-      <form action="#" id="send" method="post">
-        <input id="message" type="text" name="message">
-        <!-- <button class="submit" type="button" id="submit">Submit!!</button> -->
-        <input class="submit" type="submit" name="submit">
-      </form>
-    </div>
-
   </body>
+
 </html>
