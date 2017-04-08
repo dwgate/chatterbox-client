@@ -1,18 +1,22 @@
 body {
-    background: #eee;
+    background: #9fb0e8;
     text-align: center;
     padding: 0 25px;
-    font-family: arial, sans-serif;
+    font-family: font: 300 16px/22px "Lato", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 #main, #chats {
-    width: 500px;
+    /*width: 500px;*/
     margin: auto;
     text-align: left;
     background: white;
     padding: 50px 60px;
     border: solid #ddd;
     border-width: 0 1px 1px 1px;
+}
+
+#chats {
+  width: 50%;
 }
 
 #main h1 {
@@ -88,12 +92,32 @@ form input[type=text] {
     background-color: #0090da;
 }
 
+
+
+/*Messages*/
 .message-container {
-    background-color: red;
-    margin-bottom: 10px;
-    padding: 5px;
+  border: 2px solid #003884;
+  border-radius: 8px;
+  background-color: #b7b6b6;
+  margin-bottom: 10px;
+  padding: 5px;
 }
 
 p {
-    margin: 0;
+  font-family: "Lato", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 0;
 }
+
+p.created {
+  font-size: 10px;
+  text-align: right;
+}
+p.message {
+  font-size: 18px;
+}
+p.username {
+  font-size: 14px;
+}
+
+
+

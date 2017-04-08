@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <title>chatterbox</title>
     <link rel="stylesheet" href="styles/styles.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400" rel="stylesheet">
+    <!-- added this font family  -->
 
     <!-- dependencies -->
     <script src="bower_components/jquery/dist/jquery.js"></script>
@@ -25,12 +27,14 @@
   </head>
 
   <body>
+  <header><h1>Chatterbox</h1></header>
+
+
     <div id="main">
-      <h1>chatterbox</h1>
+
       <div id="rooms">
         Room:
-        <select id="roomSelect">
-        </select>
+        <select id="roomSelect"></select>
       </div>
 
       <div id="chats"></div>
@@ -42,7 +46,11 @@
           <input class="submit" type="submit" name="submit">
         </form>
       </div>
+
     </div>
+
+    <footer></footer>
+    
   </body>
 
 </html>
