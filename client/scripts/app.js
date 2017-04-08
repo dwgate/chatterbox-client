@@ -2,18 +2,29 @@
 var app = {
   server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
   rooms: new Set(),
-  users: new Set()
+  users: new Set(),
+  messages: new Set(),
+  currentRoom: 'ParseAPI'
 };
 
 app.init = function() {
   app.fetch();
 
+  setInterval(function() {
+    app.fetch();
+  }, 1000);
+
   $('#main').find('.username').off().click(function(event) {
     app.handleUsernameClick();
   });
 
-  $('.submit').off().submit(function(event) {
+  $('.submit').off().on('click', function(event) {
     app.handleSubmit();
+  });
+
+  $('#roomSelect').off().on('change', function(event) {
+    app.currentRoom = event.currentTarget.value;
+    app.changeRoom();
   });
 };
 
@@ -25,7 +36,7 @@ app.send = function(message) {
     data: JSON.stringify(message),
     contentType: 'application/json',
     success: function (data) {
-      console.log('chatterbox: Message sent');
+      console.log('chatterbox: Message sent' + JSON.stringify(data));
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -43,14 +54,15 @@ app.fetch = function() {
     // contentType: 'application/json',
     success: function (data) {
       console.log('chatterbox: Messages received');
+      console.log(data.results.length);
       app.populate(data);
+      app.renderRoom();
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
       console.error('chatterbox: Failed to fetch messages', data);
     }
   });  
-
 };
 
 app.clearMessages = function() {
@@ -66,14 +78,20 @@ app.renderMessage = function(message) {
   // "createdAt":"2017-02-08T21:42:35.550Z",
   // "updatedAt":"2017-02-08T21:42:35.550Z"
 
-  $('#chats').append(`<div class="message-container" data-room-name="${message.roomname}">
+  var newMessage = `<div class="message-container" data-room-name="${message.roomname}">
       <p class="username">${message.username}</p>
       <p class="message">${message.text}</p>
+      <p class="roomname">${message.roomname}</p>
       <p class="created">${message.createdAt}</p>
-    </div>`);
+      <p class="created">${message.objectId}</p>
+    </div>`;
 
   this.users.add(message.username);
   this.rooms.add(message.roomname);
+
+  if (message.roomname === app.currentRoom) {
+    $('#chats').append(newMessage);
+  }
 };
 
 app.renderRoom = function() {
@@ -89,16 +107,41 @@ app.handleUsernameClick = function() {
 
 app.handleSubmit = function() {
   console.log('handle submit');
-  app.send($('#message').val());
-  return true;
+  var message = {
+    username: 'johnanded',
+    text: 'trololotrololotrololotrololotrololotrololotrololotrololo',
+    roomname: app.currentRoom
+  };
+
+  // message.username = $('#username').val();
+  // message.message = $('#message').val();
+  // message.roomname = 'testRoom';
+
+  console.log (message);
+  app.send(message);
 };
 
 app.populate = function(messages) {
-  messages.results.forEach((message) => {
-    app.renderMessage(message);
+  messages.results.forEach(message => {
+    // console.log (message);
+    // console.log (this.messages);
+    if (!app.messages.has(JSON.stringify(message))) {
+      console.log('adding...');
+      app.messages.add(JSON.stringify(message));
+      app.renderMessage(message);
+    } else {
+      // console.log ("DUPLICATE ITEM");
+    }
   });
-  app.renderRoom();
+  console.log (this.messages.length);
 };
+
+app.changeRoom = function() {
+  app.clearMessages();
+  app.messages.forEach(message => {
+      app.renderMessage(JSON.parse(message));    
+  });
+}
 
 $(document).ready(function() {
   app.init();
