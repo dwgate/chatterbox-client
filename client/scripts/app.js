@@ -2,7 +2,6 @@
 var app = {
   server: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
   rooms: new Set(),
-  users: new Set(),
   messages: new Set(),
   currentRoom: '',
   friends: new Set()
@@ -12,11 +11,8 @@ app.init = function() {
   app.fetch();
   setInterval(function() {
     app.fetch();
-  }, 5000);
+  }, 1000);
 
-  $('#chats').on('click', function(event) {
-    app.handleUsernameClick();
-  });
 
   $('.submit').off().on('click', function(event) {
     app.handleSubmit();
@@ -25,6 +21,17 @@ app.init = function() {
   $('#roomSelect').off().on('change', function(event) {
     app.currentRoom = event.currentTarget.value;
     app.changeRoom();
+    app.idFriends();
+    //call method to bold matching friend in dom
+  });
+
+  $('#newRoom').off().on('click', function(event) {
+    var newRoomName = prompt ("new room name?")
+    if (newRoomName) {
+      app.renderRoom(newRoomName);
+      app.currentRoom = newRoomName;
+      app.changeRoom();
+    }
   });
 };
 
@@ -50,16 +57,17 @@ app.fetch = function() {
     // This is the url you should use to communicate with the parse API server.
     url: app.server + '?order=-createdAt',
     type: 'GET',
-    // order: -createdAt,
-    // data: JSON.stringify(message),
-    // contentType: 'application/json',
     success: function (data) {
       console.log('chatterbox: Messages received');
       app.populate(data);
       app.room = $("#roomSelect option:first-child").val();
 
-      // app.renderRooms();
-      // set roomselect dropdown to equal lobby
+      $('.username').off().on('click', function(event) {
+        app.friends.add(event.currentTarget.innerHTML);
+        //call method to bold matching friend in the dom
+        // app.handleUsernameClick(event);
+      });
+      app.idFriends();
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -97,13 +105,7 @@ function removeTags(html) {
 }
 
 app.renderMessage = function(message) {
-  // this.rooms = new Set();
-  // "objectId":"gHL2zQFXS0",
-  // "username":"dan",
-  // "text":"first",
-  // "roomname":"lobby",
-  // "createdAt":"2017-02-08T21:42:35.550Z",
-  // "updatedAt":"2017-02-08T21:42:35.550Z"
+  var usedKeys = ['username', 'text', 'roomname', 'createdAt', 'objectId'];
 
   var username = message.username && removeTags(message.username);
   var text = message.text && removeTags(message.text);
@@ -119,8 +121,6 @@ app.renderMessage = function(message) {
       <p class="created">${objectId}</p>
     </div>`;
 
-  this.users.add(message.username);
-
   if (!this.rooms.has(message.roomname)) {
     this.rooms.add(message.roomname);
     this.renderRoom(message.roomname)
@@ -131,24 +131,6 @@ app.renderMessage = function(message) {
   }
 };
 
-// var GetURLParameter = function(sParam) {
-//   var sPageURL = window.location.search.substring(1);
-//   var sURLVariables = sPageURL.split('&');
-//   for (var i = 0; i < sURLVariables.length; i++) {
-//     var sParameterName = sURLVariables[i].split('=');
-//     if (sParameterName[0] === sParam) {
-//       return sParameterName[1];
-//     }
-//   }
-// }​;
-
-// app.renderRooms = function() {
-//   $('#roomSelect').children().remove();
-//   this.rooms.forEach(function (room) {
-//       $('#roomSelect').append(`<option value="${room}">${room}</option>`);
-//   });
-// };
-
 app.renderRoom = function(room) {
   room = room && removeTags(room);
   $('#roomSelect').append(`<option value="${room}">${room}</option>`);
@@ -156,23 +138,19 @@ app.renderRoom = function(room) {
 
 app.handleUsernameClick = function() {
   console.log('handle user name');
+  app.friends.forEach(friend => {
+    console.log (friend);
+  });
   return true;
 };
 
 app.handleSubmit = function() {
   console.log('handle submit');
-  // var username = GetURLParameter('username');
   var message = {
     username: window.location.search.replace('?username=', ''),
     text: $('#message').val(),
     roomname: app.currentRoom
   };
-
-  // message.username = $('#username').val();
-  // message.message = $('#message').val();
-  // message.roomname = 'testRoom';
-
-  console.log (message);
   app.send(message);
 };
 
@@ -190,7 +168,15 @@ app.changeRoom = function() {
   app.messages.forEach(message => {
       app.renderMessage(JSON.parse(message));    
   });
-}
+};
+
+app.idFriends = function() {
+  $('.message-container .username')
+    .filter(function() {
+      return app.friends.has($(this).text()) 
+    })
+    .addClass('friend');
+};
 
 $(document).ready(function() {
   app.init();

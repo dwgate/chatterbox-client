@@ -11,8 +11,6 @@ body {
     text-align: left;
     background: white;
     padding: 50px 60px;
-    border: solid #ddd;
-    border-width: 0 1px 1px 1px;
 }
 
 #chats {
@@ -54,6 +52,7 @@ form {
     padding: 20px;
     padding-left: 0;
     margin-bottom: 20px;
+    text-align: center;
 }
 
 form input[type=text] {
@@ -88,8 +87,8 @@ form input[type=text] {
 }
 
 .friend {
-    color: #fff;
-    background-color: #0090da;
+    color: red;
+    font-weight: bold;
 }
 
 
@@ -118,4 +117,5 @@ p.message {
 p.username {
   font-size: 14px;
 }
+
 
